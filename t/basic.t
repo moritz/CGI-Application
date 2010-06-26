@@ -14,9 +14,10 @@ BEGIN { @*INC.push('t/lib', 'lib') };
 use CGI::Application;
 
 
-sub response-like($app, Mu $header, Mu $body, $comment) {
+sub response-like($app, Mu $header, Mu $body, $comment, :$todo-header) {
     my $output = $app.run;
     my @hb = $output.split(rx{\r?\n\r?\n});
+    todo($todo-header) if $todo-header;
     ok ?(@hb[0] ~~ $header), "$comment (header)" or diag "Got: @hb[0].perl()";
     ok ?(@hb[1] ~~ $body),   "$comment (body)"   or diag "Got: @hb[1].perl()";
 }
@@ -58,6 +59,7 @@ use TestApp;
         rx{^'Status: 302'},
         rx{^'Hello World: redirect_test'},
         'TestApp, redirect_test',
+        :todo-header('CGI style header munging'),
     );
 
 }
