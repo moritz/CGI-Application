@@ -14,6 +14,12 @@ has %.header-props is rw = {};
 
 has $.current-runmode is rw;
 
+has %.callbacks = (
+    prerun  => [<prerun>],
+    postrun => [<postrun>],
+    error   => [<error>],
+);
+
 # the CGI object or hash
 has %.query is rw;
 
@@ -22,7 +28,7 @@ multi method run() {
     $.current-runmode = $rm;
 
     # undefine $.__PRERUN_MODE_LOCKED;
-    # $.call-hook('prerun', $rm);
+    $.call-hook('prerun', $rm);
     # $.__PRERUN_MODE_LOCKED = 1
     # my $prerun-mode = $.prerun-mode;
     # if $prerun-mode {
@@ -32,7 +38,7 @@ multi method run() {
 
     my $body = $.__get_body($rm);
 
-    # $.call-hook('postrun', $body);
+    $.call-hook('postrun', $body);
 
     my $headers = $._send_headers();
 
@@ -40,6 +46,19 @@ multi method run() {
 
     print $output unless $*CGI_APP_RETURN_ONLY || %*ENV<CGI_APP_RETURN_ONLY>;
     return $output;
+}
+
+multi method call-hook($hook, *@args, *%opts) {
+    die "Unknown hook ($hook)" unless %.callbacks{$hook};
+
+    my %executed_callback;
+    for @( %.callbacks{$hook} ) -> $callback {
+        next if %executed_callback{$callback};
+        try { self.*"$callback"(|@args, |%opts) };
+        %executed_callback{$callback} = 1;
+        die "Error executing callback '$callback' in $hook stage: $!" if $!;
+    }
+    # TODO: callbacks in classes. (blocking on: understanding them first)
 
 }
 
@@ -63,10 +82,16 @@ multi method __get_runmeth($rm) {
 multi method __get_body($rm) {
     my $method-name = $.__get_runmeth($rm);
     my $body;
-    try { $body = self."$method-name"() };
+    try {
+        $body = self."$method-name"();
+    }
+    # RAKUDO:
+    # don't use a CATCH block here, because dying in a CATCH block 
+    # recurses infinitely.
     if $! {
         my $error = $!;
-#        $.call-hook('error', $error);
+#        note("Calling 'error' hook ($!)");
+        $.call-hook('error', $error);
         if $.error-mode {
             $body = self."$.error-mode"();
         } else {
@@ -96,7 +121,15 @@ multi method dump() {
         take "Query parameters: %.query.perl()\n";
         # TODO: dump %*ENV
     }
+}
 
+# Callbacks, to be overridden if necessary
+
+method prerun(*@args) {
+    # do nothing for now.
+}
+method postrun(*@args) {
+    # do nothing for now.
 }
 
 # vim: ft=perl6

@@ -73,6 +73,41 @@ use TestApp;
     );
 }
 
+skip('Cookies') for ^3;
+if 0 {
+    my $app = TestApp.new(query => { test_rm => 'cookie_test' });
+
+    response-like(
+        $app,
+        rx{ ^^'Set-Cookie: c_name=c_value' },
+        rx{ 'Hello World: cookie_test' },
+        'TestApp, cookie test',
+    );
+}
+
+# TODO: template tests
+
+
+{
+    my $error_hook_called = 0;
+    class TestAppWithError is CGI::Application {
+        method BUILD { %.run-modes<throws_error> = 'throws_error' };
+        method throws_error() {
+            die "OH NOEZ";
+        }
+        method error(*@args) {
+            $error_hook_called = 1;
+        }
+    }
+
+    my $app = TestAppWithError.new(query => { rm => 'throws_error' });
+
+    dies_ok { $app.run() },
+        'when the run mode dies, the whole execution aborts';
+    ok $error_hook_called, 'and the error hook was called';
+
+}
+
 done_testing;
 
 # vim: ft=perl6
