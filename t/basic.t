@@ -60,7 +60,17 @@ use TestApp;
         rx{^'Hello World: redirect_test'},
         'TestApp, redirect_test',
     );
+}
 
+{
+    my $app = TestApp.new;
+    $app.query = { test_rm => 'dump_txt' }
+    response-like(
+        $app,
+        rx{^'Content-Type: text/html'},
+        rx{'Query parameter'},
+        'TestApp, dump_text',
+    );
 }
 
 done_testing;

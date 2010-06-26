@@ -8,6 +8,8 @@ class TestApp is CGI::Application {
         for <basic_test redirect_test> {
             %.run-modes{$_} = $_;
         }
+        %.run-modes<dump_txt> = 'dump';
+
         %.query<last_orm> = 'teardown';
     }
 
