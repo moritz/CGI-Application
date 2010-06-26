@@ -4,10 +4,12 @@ class CGI::Application;
 has %.run-modes   is rw = (start => 'dump');
 has $.start-mode  is rw = 'start';
 
-has $.header-type is rw = 'header';
 has $.mode-param  is rw = 'rm';
 
 has $.error-mode  is rw;
+
+# TODO: type-restrict it to any <header none redirect>
+has $.header-type is rw = 'header';
 
 has $.current-runmode is rw;
 

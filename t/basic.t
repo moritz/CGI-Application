@@ -35,6 +35,19 @@ sub response-like($app, Mu $header, Mu $body, $comment) {
     );
 }
 
+{
+    use TestApp;
+    my $app = TestApp.new();
+    isa_ok $app, CGI::Application;
+
+    response-like(
+        $app,
+        rx{^'Content-Type: text/html'},
+        rx{'Hello World: basic_test'},
+        'TestApp, blank query',
+    );
+}
+
 done_testing;
 
 # vim: ft=perl6
