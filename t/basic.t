@@ -90,13 +90,17 @@ if 0 {
 
 {
     my $error_hook_called = 0;
+    my $error_mode_called = 0;
     class TestAppWithError is CGI::Application {
         method BUILD { %.run-modes<throws_error> = 'throws_error' };
         method throws_error() {
             die "OH NOEZ";
         }
         method error(*@args) {
-            $error_hook_called = 1;
+            $error_hook_called++;
+        }
+        method my_error_mode(*@args) {
+            $error_mode_called++;
         }
     }
 
@@ -105,6 +109,15 @@ if 0 {
     dies_ok { $app.run() },
         'when the run mode dies, the whole execution aborts';
     ok $error_hook_called, 'and the error hook was called';
+    nok $error_mode_called, '... but error mode was not set';
+
+    # now test with error mode too
+    $error_hook_called = 0;
+    $error_mode_called = 0;
+    $app.error-mode = 'my_error_mode';
+    lives_ok { $app.run() }, 'Lives when run mode dies and error mode is set';
+    ok $error_hook_called, 'Error hook was called';
+    ok $error_mode_called, 'Error mode was called too';
 
 }
 
