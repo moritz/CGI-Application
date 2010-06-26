@@ -16,10 +16,11 @@ use CGI::Application;
 
 sub response-like($app, Mu $header, Mu $body, $comment) {
     my $output = $app.run;
-    diag "Output: " ~ $output.perl;
-    my ($h, $b) = $output.split("\r\n\r\n");
-    ok ?($h ~~ $header), "$comment (header)";
-    ok ?($b ~~ $body),   "$comment (body)";
+    my @hb = $output.split(rx{\r?\n\r?\n});
+#    diag "Header: @hb[0]";
+#    diag "Body: @hb[1]";
+    ok ?(@hb[0] ~~ $header), "$comment (header)";
+    ok ?(@hb[1] ~~ $body),   "$comment (body)";
 }
 
 {
@@ -29,9 +30,11 @@ sub response-like($app, Mu $header, Mu $body, $comment) {
     $app.query = {};
     response-like($app,
         rx{^ 'Content-Type: text/html'},
-        rx{ 'Query Parameters:' },
+        rx{ 'Query parameters:' },
         'base class response',
     );
 }
 
 done_testing;
+
+# vim: ft=perl6

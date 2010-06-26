@@ -7,6 +7,8 @@ has $.start-mode  is rw = 'start';
 has $.header-type is rw = 'header';
 has $.mode-param  is rw = 'rm';
 
+has $.error-mode  is rw;
+
 has $.current-runmode is rw;
 
 # the CGI object or hash
@@ -48,8 +50,26 @@ multi method __get_runmode($rm-param) {
     return $rm;
 }
 
+multi method __get_runmeth($rm) {
+    my $m = %.run-modes{$rm};
+    # TODO: implement AUTOLOAD/CANDO mode
+    die "No such run mode '$rm'\n" unless defined $m;
+    return $m;
+}
+
 multi method __get_body($rm) {
-    'BODY';
+    my $method-name = $.__get_runmeth($rm);
+    my $body = try { self."$method-name"() };
+    if $! {
+        my $error = $!;
+        $.call-hook('error', $error);
+        if $.error-mode {
+            $body = self."$.error-mode"();
+        } else {
+            die "Error executing run mode '$rm': $error";
+        }
+    }
+    return $body;
 }
 
 multi method _send_headers() {
