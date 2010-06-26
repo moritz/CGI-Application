@@ -59,7 +59,6 @@ use TestApp;
         rx{^'Status: 302'},
         rx{^'Hello World: redirect_test'},
         'TestApp, redirect_test',
-        :todo-header('CGI style header munging'),
     );
 
 }

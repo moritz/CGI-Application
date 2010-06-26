@@ -10,7 +10,7 @@ has $.error-mode  is rw;
 
 # TODO: type-restrict it to any <header none redirect>
 has $.header-type is rw = 'header';
-has %.header-props is rw;
+has %.header-props is rw = {};
 
 has $.current-runmode is rw;
 
@@ -76,8 +76,18 @@ multi method __get_body($rm) {
     return $body;
 }
 
+method !header-helper-redirect() {
+    return '' unless $.header-type eq 'redirect';
+    die "Need a new URL for redirecting" unless %.header-props<url>;
+    return    "Status: 302 Found\r\n"
+            ~ "Location: %.header-props<url>\r\n";
+}
+
 multi method _send_headers() {
-    "Content-Type: text/html\r\n\r\n";
+    return '' if $.header-type eq 'none';
+    # TODO: more general stuff
+    return self!header-helper-redirect 
+           ~ "Content-Type: text/html\r\n\r\n";
 }
 
 multi method dump() {
