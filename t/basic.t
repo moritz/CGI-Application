@@ -92,7 +92,7 @@ if 0 {
     my $error_hook_called = 0;
     my $error_mode_called = 0;
     class TestAppWithError is CGI::Application {
-        method BUILD { %.run-modes<throws_error> = 'throws_error' };
+        submethod BUILD { %.run-modes<throws_error> = 'throws_error' };
         method throws_error() {
             die "OH NOEZ";
         }
@@ -118,6 +118,25 @@ if 0 {
     lives_ok { $app.run() }, 'Lives when run mode dies and error mode is set';
     ok $error_hook_called, 'Error hook was called';
     ok $error_mode_called, 'Error mode was called too';
+}
+
+{
+    my $tracker = '';
+    class WithHook is CGI::Application {
+        submethod BUILD   { %.run-modes<doit> = 'doit' }
+        method prerun($)  { $tracker ~= 'prerun'    }
+        method postrun($) { $tracker ~= ' postrun'  }
+        method doit()     { $tracker ~= ' doit'; 42 }
+    }
+    my $app = WithHook.new(query => { rm => 'doit' });
+    response-like(
+        $app,
+        rx{^'Content-Type: text/html'},
+        42,
+        'WithHook',
+    );
+    is $tracker, 'prerun doit postrun',
+        'all trackers were called in the right order';
 
 }
 
