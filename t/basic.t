@@ -17,10 +17,8 @@ use CGI::Application;
 sub response-like($app, Mu $header, Mu $body, $comment) {
     my $output = $app.run;
     my @hb = $output.split(rx{\r?\n\r?\n});
-#    diag "Header: @hb[0]";
-#    diag "Body: @hb[1]";
-    ok ?(@hb[0] ~~ $header), "$comment (header)";
-    ok ?(@hb[1] ~~ $body),   "$comment (body)";
+    ok ?(@hb[0] ~~ $header), "$comment (header)" or diag "Got: @hb[0].perl()";
+    ok ?(@hb[1] ~~ $body),   "$comment (body)"   or diag "Got: @hb[1].perl()";
 }
 
 {
@@ -35,8 +33,8 @@ sub response-like($app, Mu $header, Mu $body, $comment) {
     );
 }
 
+use TestApp;
 {
-    use TestApp;
     my $app = TestApp.new();
     isa_ok $app, CGI::Application;
 
@@ -46,6 +44,22 @@ sub response-like($app, Mu $header, Mu $body, $comment) {
         rx{'Hello World: basic_test'},
         'TestApp, blank query',
     );
+}
+
+{
+    dies_ok { TestApp.new(query => [1, 2, 3]) },
+            'query is restricted to Associative';
+}
+
+{
+    my $app = TestApp.new(query => { test_rm => 'redirect_test' });
+    response-like(
+        $app,
+        rx{^'Status: 302'},
+        rx{^'Hello World: redirect_test'},
+        'TestApp, redirect_test',
+    );
+
 }
 
 done_testing;

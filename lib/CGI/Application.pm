@@ -10,6 +10,7 @@ has $.error-mode  is rw;
 
 # TODO: type-restrict it to any <header none redirect>
 has $.header-type is rw = 'header';
+has %.header-props is rw;
 
 has $.current-runmode is rw;
 
@@ -61,10 +62,11 @@ multi method __get_runmeth($rm) {
 
 multi method __get_body($rm) {
     my $method-name = $.__get_runmeth($rm);
-    my $body = try { self."$method-name"() };
+    my $body;
+    try { $body = self."$method-name"() };
     if $! {
         my $error = $!;
-        $.call-hook('error', $error);
+#        $.call-hook('error', $error);
         if $.error-mode {
             $body = self."$.error-mode"();
         } else {

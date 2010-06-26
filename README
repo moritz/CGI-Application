@@ -6,6 +6,9 @@ module are realized as $app.param = $p in the Perl 6 port.
 
 Very much a work in progress. Contributes are very welcome.
 
+Status:
+    * basic dispatch works
+
 License:
 
 I've contacted the authors of Perl 5 CGI::Application to get
