@@ -148,7 +148,7 @@ if 0 {
             $.start-mode = 'default_mode';
             $.mode-param = {
                 my $rm = %.query<go_to_mode>;
-                return $rm eq 'undef_rm' ?? Any !! $rm;
+                $rm eq 'undef_rm' ?? Any !! $rm;
             };
             %.run-modes = (
                 subref_modeparam => { 'Hello World: subref_modeparam OK' },
@@ -174,11 +174,14 @@ if 0 {
         CallbackRunMode.new(query => {go_to_mode => ''}),
         rx{^'Content-Type: text/html'},
         rx{'Hello World: default_mode OK'},
-        :todo-body('empty string run mode fallback'),
         'empty string as run mode triggers fallback to start_mode',
     );
-
-
+    response-like(
+        CallbackRunMode.new(query => {go_to_mode => 'undef_rm'}),
+        rx{^'Content-Type: text/html'},
+        rx{'Hello World: default_mode OK'},
+        'undefined run mode triggers fallback to start_mode',
+    );
 }
 
 done_testing;
