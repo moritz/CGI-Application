@@ -127,6 +127,7 @@ if 0 {
         method prerun($)  { $tracker ~= 'prerun'    }
         method postrun($) { $tracker ~= ' postrun'  }
         method doit()     { $tracker ~= ' doit'; 42 }
+        method teardown() { $tracker ~= ' teardown'; }
     }
     my $app = WithHook.new(query => { rm => 'doit' });
     response-like(
@@ -135,7 +136,7 @@ if 0 {
         42,
         'WithHook',
     );
-    is $tracker, 'prerun doit postrun',
+    is $tracker, 'prerun doit postrun teardown',
         'all trackers were called in the right order';
 
 }

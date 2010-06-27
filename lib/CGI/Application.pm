@@ -15,9 +15,10 @@ has %.header-props is rw = {};
 has $.current-runmode is rw;
 
 has %.callbacks = (
-    prerun  => [<prerun>],
-    postrun => [<postrun>],
-    error   => [<error>],
+    prerun   => [<prerun>],
+    postrun  => [<postrun>],
+    error    => [<error>],
+    teardown => [<teardown>],
 );
 
 # the CGI object or hash
@@ -45,6 +46,9 @@ multi method run() {
     my $output = $headers ~ $body;
 
     print $output unless $*CGI_APP_RETURN_ONLY || %*ENV<CGI_APP_RETURN_ONLY>;
+
+    $.call-hook('teardown');
+
     return $output;
 }
 
@@ -131,5 +135,7 @@ method prerun(*@args) {
 method postrun(*@args) {
     # do nothing for now.
 }
+
+method teardown() {};
 
 # vim: ft=perl6
