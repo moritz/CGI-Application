@@ -24,6 +24,7 @@ has %.callbacks = (
 # the CGI object or hash
 has %.query is rw;
 
+
 multi method run() {
     my $rm = $.__get_runmode($.mode-param);
     $.current-runmode = $rm;
@@ -67,12 +68,15 @@ multi method call-hook($hook, *@args, *%opts) {
 }
 
 multi method __get_runmode($rm-param) {
+#    warn "In __get_runmode\n";
     my $rm = do given $rm-param {
-        when Callable { .(self)     }
-        when Hash     { .<run-mode> }
-        default       { $.query{$_} }
+        when Callable       { .(self)     }
+        when Associative    { .<run-mode> }
+        default             { %.query{$_} }
     }
+#    warn "Run mode (before): $rm.perl()";
     $rm = $.start-mode unless defined($rm) && $rm.chars;
+#    warn "Run mode (after): $rm.perl()";
     return $rm;
 }
 

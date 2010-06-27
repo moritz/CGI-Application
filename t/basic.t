@@ -14,11 +14,13 @@ BEGIN { @*INC.push('t/lib', 'lib') };
 use CGI::Application;
 
 
-sub response-like($app, Mu $header, Mu $body, $comment, :$todo-header) {
+sub response-like($app, Mu $header, Mu $body, $comment,
+        :$todo-header, :$todo-body) {
     my $output = $app.run;
     my @hb = $output.split(rx{\r?\n\r?\n});
     todo($todo-header) if $todo-header;
     ok ?(@hb[0] ~~ $header), "$comment (header)" or diag "Got: @hb[0].perl()";
+    todo($todo-body) if $todo-body;
     ok ?(@hb[1] ~~ $body),   "$comment (body)"   or diag "Got: @hb[1].perl()";
 }
 
@@ -167,6 +169,13 @@ if 0 {
         rx{^'Content-Type: text/html'},
         rx{'Hello World: zero_mode OK'},
         '0 as run mode',
+    );
+    response-like(
+        CallbackRunMode.new(query => {go_to_mode => ''}),
+        rx{^'Content-Type: text/html'},
+        rx{'Hello World: default_mode OK'},
+        :todo-body('empty string run mode fallback'),
+        'empty string as run mode triggers fallback to start_mode',
     );
 
 
