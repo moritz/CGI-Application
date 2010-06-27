@@ -84,10 +84,10 @@ multi method __get_runmeth($rm) {
 }
 
 multi method __get_body($rm) {
-    my $method-name = $.__get_runmeth($rm);
+    my $method = $.__get_runmeth($rm);
     my $body;
     try {
-        $body = self."$method-name"();
+        $body = $method ~~ Callable ?? $method() !! self."$method"();
     }
     # RAKUDO:
     # don't use a CATCH block here, because dying in a CATCH block 

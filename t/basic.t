@@ -137,7 +137,38 @@ if 0 {
         'WithHook',
     );
     is $tracker, 'prerun doit postrun teardown',
-        'all trackers were called in the right order';
+        'all hooks were called in the right order';
+}
+
+{
+    class CallbackRunMode is CGI::Application {
+        submethod BUILD {
+            $.start-mode = 'default_mode';
+            $.mode-param = {
+                my $rm = %.query<go_to_mode>;
+                return $rm eq 'undef_rm' ?? Any !! $rm;
+            };
+            %.run-modes = (
+                subref_modeparam => { 'Hello World: subref_modeparam OK' },
+                ''               => { 'Hello World: blank_mode OK' },
+                0                => { 'Hello World: zero_mode OK' },
+                default_mode     => { 'Hello World: default_mode OK' },
+            );
+        }
+    }
+    response-like(
+        CallbackRunMode.new(query => {go_to_mode => 'subref_modeparam'}),
+        rx{^'Content-Type: text/html'},
+        rx{'Hello World: subref_modeparam OK'},
+        'callable mode param',
+    );
+    response-like(
+        CallbackRunMode.new(query => {go_to_mode => '0'}),
+        rx{^'Content-Type: text/html'},
+        rx{'Hello World: zero_mode OK'},
+        '0 as run mode',
+    );
+
 
 }
 
