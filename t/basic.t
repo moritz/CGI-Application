@@ -184,6 +184,6 @@ if 0 {
     );
 }
 
-done_testing;
+done;
 
 # vim: ft=perl6
