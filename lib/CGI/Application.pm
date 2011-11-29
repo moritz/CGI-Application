@@ -92,18 +92,15 @@ multi method __get_body($rm) {
     my $body;
     try {
         $body = $method ~~ Callable ?? $method() !! self."$method"();
-    }
-    # RAKUDO:
-    # don't use a CATCH block here, because dying in a CATCH block 
-    # recurses infinitely.
-    if $! {
-        my $error = $!;
-#        note("Calling 'error' hook ($!)");
-        $.call-hook('error', $error);
-        if $.error-mode {
-            $body = self."$.error-mode"();
-        } else {
-            die "Error executing run mode '$rm': $error";
+        CATCH {
+            default {
+                $.call-hook('error', $!);
+                if $.error-mode {
+                    $body = self."$.error-mode"();
+                } else {
+                    die "Error executing run mode '$rm': $!";
+                }
+            }
         }
     }
     return $body;
