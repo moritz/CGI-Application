@@ -94,7 +94,7 @@ if 0 {
     my $error_hook_called = 0;
     my $error_mode_called = 0;
     class TestAppWithError is CGI::Application {
-        submethod BUILD { %.run-modes<throws_error> = 'throws_error' };
+        submethod BUILD { self.run-modes<throws_error> = 'throws_error' };
         method throws_error() {
             die "OH NOEZ";
         }
@@ -125,7 +125,7 @@ if 0 {
 {
     my $tracker = '';
     class WithHook is CGI::Application {
-        submethod BUILD   { %.run-modes<doit> = 'doit' }
+        submethod BUILD   { self.run-modes<doit> = 'doit' }
         method prerun($)  { $tracker ~= 'prerun'    }
         method postrun($) { $tracker ~= ' postrun'  }
         method doit()     { $tracker ~= ' doit'; 42 }
@@ -145,12 +145,12 @@ if 0 {
 {
     class CallbackRunMode is CGI::Application {
         submethod BUILD {
-            $.start-mode = 'default_mode';
-            $.mode-param = {
-                my $rm = %.query<go_to_mode>;
+            self.start-mode = 'default_mode';
+            self.mode-param = {
+                my $rm = self.query<go_to_mode>;
                 $rm eq 'undef_rm' ?? Any !! $rm;
             };
-            %.run-modes = (
+            self.run-modes = (
                 subref_modeparam => { 'Hello World: subref_modeparam OK' },
                 ''               => { 'Hello World: blank_mode OK' },
                 0                => { 'Hello World: zero_mode OK' },
