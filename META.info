@@ -4,7 +4,7 @@
     "description" : "incomplete Perl 6 port of the Perl 5 CGI::Application module",
     "build-depends" : [ ],
     "test-depends" : [
-        "Test",
+        "Test"
     ],
     "depends" : [ ],
     "provides" : {
