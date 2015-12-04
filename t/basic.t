@@ -9,7 +9,7 @@ plan *;
 # setting ENV variables fails (WTF?), so let's use a dynamic variable instead
 my $*CGI_APP_RETURN_ONLY = 1;
 
-BEGIN { @*INC.push('t/lib', 'lib') };
+use lib <t/lib lib>;
 
 use CGI::Application;
 
